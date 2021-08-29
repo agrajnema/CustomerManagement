@@ -21,7 +21,17 @@ namespace CustomerManagement.Persistence
                 //In memory DB used for integration test
                 //options.UseInMemoryDatabase("CustomerDB");
             });
-            services.AddScoped(typeof(IGenericAsyncRepository<>), typeof(BaseRepository<>));
+
+            var sp = services.BuildServiceProvider();
+
+            using (var scope = sp.CreateScope())
+            {
+                var scopedServices = scope.ServiceProvider;
+                var context = scopedServices.GetRequiredService<CustomerManagementDbContext>();
+                
+                context.Database.Migrate();
+            }
+                services.AddScoped(typeof(IGenericAsyncRepository<>), typeof(BaseRepository<>));
             services.AddScoped<ICustomerRepository, CustomerRepository>();
             return services;
         }
